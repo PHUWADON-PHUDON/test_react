@@ -10,11 +10,29 @@ const prisma = new PrismaClient();
 
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
-app.use(cors({origin: ["http://localhost:5173"],methods:["PUT,DELETE,OPTIONS"],credentials: true}));
+app.use(cors({origin:[process.env.URL_FRONT],methods:["PUT,DELETE,OPTIONS"],credentials: true}));
 
 app.get("/", async (req:Request,res:Response) => {
-    const posts = await prisma.post.findMany();
-    res.json(posts);
+    try{
+        const posts = await prisma.post.findMany();
+        res.json(posts);
+    }
+    catch(err) {
+        res.status(500).send(err);
+    }
+});
+
+app.get("/getpost/:id", async (req:Request,res:Response) => {
+    try{
+        const post = await prisma.post.findUnique({
+            where:{id:Number(req.params.id)},
+            include:{images:true}
+        });
+        res.json(post);
+    }
+    catch(err) {
+        res.status(500).send(err);
+    }
 });
 
 app.listen(process.env.PORT, () => {

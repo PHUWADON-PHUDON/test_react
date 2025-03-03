@@ -22,10 +22,27 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 const prisma = new PrismaClient();
 app.use(express_1.default.urlencoded({ extended: false }));
 app.use(express_1.default.json());
-app.use(cors({ origin: ["http://localhost:5173"], methods: ["PUT,DELETE,OPTIONS"], credentials: true }));
+app.use(cors({ origin: [process.env.URL_FRONT], methods: ["PUT,DELETE,OPTIONS"], credentials: true }));
 app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const posts = yield prisma.post.findMany();
-    res.json(posts);
+    try {
+        const posts = yield prisma.post.findMany();
+        res.json(posts);
+    }
+    catch (err) {
+        res.status(500).send(err);
+    }
+}));
+app.get("/getpost/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const post = yield prisma.post.findUnique({
+            where: { id: Number(req.params.id) },
+            include: { images: true }
+        });
+        res.json(post);
+    }
+    catch (err) {
+        res.status(500).send(err);
+    }
 }));
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
